@@ -1,0 +1,316 @@
+---
+name: econtract-network-org2
+description: econtract connection profile
+version: 1.0.0
+#
+# [Optional]. A logical description of each network channel; its peer and
+# orderer names and their roles within the channel. The physical details of
+# these components (e.g. peer IP addresses) will be specified later in the
+# profile; we focus first on the logical, and then the physical.
+#
+channels:
+  #
+  # [Optional]. papernet is the only channel in this connection profile
+  #
+  mychannel:
+    #
+    # [Optional]. Channel orderers for PaperNet. Details of how to connect to
+    # them is specified later, under the physical "orderers:" section
+    #
+    orderers:
+    #
+    # [Required]. Orderer logical name
+    #
+      - orderer1-org0
+    #
+    # [Optional]. Peers and their roles
+    #
+    peers:
+    #
+    # [Required]. Peer logical name
+    #
+      peer1-org1:
+        #
+        # [Optional]. Is this an endorsing peer? (It must have chaincode
+        # installed.) Default: true
+        #
+        endorsingPeer: true
+        #
+        # [Optional]. Is this peer used for query? (It must have chaincode
+        # installed.) Default: true
+        #
+        chaincodeQuery: true
+        #
+        # [Optional]. Is this peer used for non-chaincode queries? All peers
+        # support these types of queries, which include queryBlock(),
+        # queryTransaction(), etc. Default: true
+        #
+        ledgerQuery: true
+        #
+        # [Optional]. Is this peer used as an event hub? All peers can produce
+        # events. Default: true
+        #
+        eventSource: true
+      
+      peer2-org1:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      
+      peer1-org2:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      
+      peer2-org2:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+client:
+  organization: org2
+  connection:
+    timeout:
+      peer:
+        endorser: "300"
+organizations:
+  org1:
+    mspid: org1MSP
+    # This org's MSP store (absolute path or relative to client.cryptoconfig)
+    cryptoPath:  /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/users/{username}@org1/msp
+    peers:
+    - peer1-org1
+    - peer2-org1
+    certificateAuthorities:
+    - rca-org1
+  org2:
+    mspid: org2MSP
+    # This org's MSP store (absolute path or relative to client.cryptoconfig)
+    cryptoPath:  /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/users/{username}@org2/msp
+    peers:
+    - peer1-org2
+    - peer2-org2
+    certificateAuthorities:
+    - rca-org2
+#
+# [Optional]. Orderer physical information, by orderer name
+#
+orderers:
+  #
+  # [Required]. Name of MagnetoCorp orderer
+  #
+  orderer1-org0:
+    #
+    # [Required]. This orderer's IP address
+    #
+    url: grpcs://localhost:7050
+    tlsCACerts:
+      pem: |
+          -----BEGIN CERTIFICATE-----
+          MIICFDCCAbqgAwIBAgIUYVT6gpz7cx+X8Q1Tb6B4wXPQPXwwCgYIKoZIzj0EAwIw
+          XjELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMQ8wDQYDVQQDEwZjYS10bHMw
+          HhcNMjEwMjA4MTEzNTAwWhcNMzYwMjA1MTEzNTAwWjBeMQswCQYDVQQGEwJVUzEX
+          MBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8w
+          DQYDVQQLEwZGYWJyaWMxDzANBgNVBAMTBmNhLXRsczBZMBMGByqGSM49AgEGCCqG
+          SM49AwEHA0IABFvnMEXhvkeX1g6ChS9Qd/4Z2LnsdF4a4JbmzPoe+D8UaI0rXPVV
+          tmTZK6p+6tN6+R3KibaiGUn4YrhCKcnvNnejVjBUMA4GA1UdDwEB/wQEAwIBBjAS
+          BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRUGdcMR/DXe39i0ynzTQXAHc2O
+          fDAPBgNVHREECDAGhwQAAAAAMAoGCCqGSM49BAMCA0gAMEUCIQChFJoqyH6QF4fH
+          kHlhYm1TwW5p8ynl2vEM1VjmpEWTOgIgUvGALv+9xESItKFgRajOYMr3lKAtalfX
+          +LjtV+/q9C0=
+          -----END CERTIFICATE-----
+    #
+    # [Optional]. gRPC connection properties used for communication
+    #
+    grpcOptions:
+      ssl-target-name-override: orderer1-org0
+      #hostnameOverride: orderer1-org0
+peers:
+  peer1-org1:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      pem: |
+          -----BEGIN CERTIFICATE-----
+          MIICFDCCAbqgAwIBAgIUYVT6gpz7cx+X8Q1Tb6B4wXPQPXwwCgYIKoZIzj0EAwIw
+          XjELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMQ8wDQYDVQQDEwZjYS10bHMw
+          HhcNMjEwMjA4MTEzNTAwWhcNMzYwMjA1MTEzNTAwWjBeMQswCQYDVQQGEwJVUzEX
+          MBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8w
+          DQYDVQQLEwZGYWJyaWMxDzANBgNVBAMTBmNhLXRsczBZMBMGByqGSM49AgEGCCqG
+          SM49AwEHA0IABFvnMEXhvkeX1g6ChS9Qd/4Z2LnsdF4a4JbmzPoe+D8UaI0rXPVV
+          tmTZK6p+6tN6+R3KibaiGUn4YrhCKcnvNnejVjBUMA4GA1UdDwEB/wQEAwIBBjAS
+          BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRUGdcMR/DXe39i0ynzTQXAHc2O
+          fDAPBgNVHREECDAGhwQAAAAAMAoGCCqGSM49BAMCA0gAMEUCIQChFJoqyH6QF4fH
+          kHlhYm1TwW5p8ynl2vEM1VjmpEWTOgIgUvGALv+9xESItKFgRajOYMr3lKAtalfX
+          +LjtV+/q9C0=
+          -----END CERTIFICATE-----
+          
+    grpcOptions:
+      ssl-target-name-override: peer1-org1
+      hostnameOverride: peer1-org1
+  peer2-org1:
+    url: grpcs://0.0.0.0:8051
+    tlsCACerts:
+      pem: |
+          -----BEGIN CERTIFICATE-----
+          MIICFDCCAbqgAwIBAgIUYVT6gpz7cx+X8Q1Tb6B4wXPQPXwwCgYIKoZIzj0EAwIw
+          XjELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMQ8wDQYDVQQDEwZjYS10bHMw
+          HhcNMjEwMjA4MTEzNTAwWhcNMzYwMjA1MTEzNTAwWjBeMQswCQYDVQQGEwJVUzEX
+          MBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8w
+          DQYDVQQLEwZGYWJyaWMxDzANBgNVBAMTBmNhLXRsczBZMBMGByqGSM49AgEGCCqG
+          SM49AwEHA0IABFvnMEXhvkeX1g6ChS9Qd/4Z2LnsdF4a4JbmzPoe+D8UaI0rXPVV
+          tmTZK6p+6tN6+R3KibaiGUn4YrhCKcnvNnejVjBUMA4GA1UdDwEB/wQEAwIBBjAS
+          BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRUGdcMR/DXe39i0ynzTQXAHc2O
+          fDAPBgNVHREECDAGhwQAAAAAMAoGCCqGSM49BAMCA0gAMEUCIQChFJoqyH6QF4fH
+          kHlhYm1TwW5p8ynl2vEM1VjmpEWTOgIgUvGALv+9xESItKFgRajOYMr3lKAtalfX
+          +LjtV+/q9C0=
+          -----END CERTIFICATE-----
+          
+    grpcOptions:
+      ssl-target-name-override: peer2-org1
+      hostnameOverride: peer2-org1
+  peer1-org2:
+    url: grpcs://0.0.0.0:9051
+    tlsCACerts:
+      pem: |
+          -----BEGIN CERTIFICATE-----
+          MIICFDCCAbqgAwIBAgIUYVT6gpz7cx+X8Q1Tb6B4wXPQPXwwCgYIKoZIzj0EAwIw
+          XjELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMQ8wDQYDVQQDEwZjYS10bHMw
+          HhcNMjEwMjA4MTEzNTAwWhcNMzYwMjA1MTEzNTAwWjBeMQswCQYDVQQGEwJVUzEX
+          MBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8w
+          DQYDVQQLEwZGYWJyaWMxDzANBgNVBAMTBmNhLXRsczBZMBMGByqGSM49AgEGCCqG
+          SM49AwEHA0IABFvnMEXhvkeX1g6ChS9Qd/4Z2LnsdF4a4JbmzPoe+D8UaI0rXPVV
+          tmTZK6p+6tN6+R3KibaiGUn4YrhCKcnvNnejVjBUMA4GA1UdDwEB/wQEAwIBBjAS
+          BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRUGdcMR/DXe39i0ynzTQXAHc2O
+          fDAPBgNVHREECDAGhwQAAAAAMAoGCCqGSM49BAMCA0gAMEUCIQChFJoqyH6QF4fH
+          kHlhYm1TwW5p8ynl2vEM1VjmpEWTOgIgUvGALv+9xESItKFgRajOYMr3lKAtalfX
+          +LjtV+/q9C0=
+          -----END CERTIFICATE-----
+          
+    grpcOptions:
+      ssl-target-name-override: peer1-org2
+      hostnameOverride: peer1-org2
+  peer2-org2:
+    url: grpcs://0.0.0.0:10051
+    tlsCACerts:
+      pem: |
+          -----BEGIN CERTIFICATE-----
+          MIICFDCCAbqgAwIBAgIUYVT6gpz7cx+X8Q1Tb6B4wXPQPXwwCgYIKoZIzj0EAwIw
+          XjELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMQ8wDQYDVQQDEwZjYS10bHMw
+          HhcNMjEwMjA4MTEzNTAwWhcNMzYwMjA1MTEzNTAwWjBeMQswCQYDVQQGEwJVUzEX
+          MBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8w
+          DQYDVQQLEwZGYWJyaWMxDzANBgNVBAMTBmNhLXRsczBZMBMGByqGSM49AgEGCCqG
+          SM49AwEHA0IABFvnMEXhvkeX1g6ChS9Qd/4Z2LnsdF4a4JbmzPoe+D8UaI0rXPVV
+          tmTZK6p+6tN6+R3KibaiGUn4YrhCKcnvNnejVjBUMA4GA1UdDwEB/wQEAwIBBjAS
+          BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRUGdcMR/DXe39i0ynzTQXAHc2O
+          fDAPBgNVHREECDAGhwQAAAAAMAoGCCqGSM49BAMCA0gAMEUCIQChFJoqyH6QF4fH
+          kHlhYm1TwW5p8ynl2vEM1VjmpEWTOgIgUvGALv+9xESItKFgRajOYMr3lKAtalfX
+          +LjtV+/q9C0=
+          -----END CERTIFICATE-----
+          
+    grpcOptions:
+      ssl-target-name-override: peer2-org2
+      hostnameOverride: peer2-org2
+certificateAuthorities:
+  rca-org1:
+    url: https://localhost:7054
+    caName: rca-org1
+    tlsCACerts:
+      pem: 
+        - |
+          -----BEGIN CERTIFICATE-----
+          MIICFzCCAb6gAwIBAgIUcM8H0PemmLzTqsvWy/X6ZUXSPRowCgYIKoZIzj0EAwIw
+          YDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMREwDwYDVQQDEwhyY2Etb3Jn
+          MTAeFw0yMTAyMDgxMTM2MDBaFw0zNjAyMDUxMTM2MDBaMGAxCzAJBgNVBAYTAlVT
+          MRcwFQYDVQQIEw5Ob3J0aCBDYXJvbGluYTEUMBIGA1UEChMLSHlwZXJsZWRnZXIx
+          DzANBgNVBAsTBkZhYnJpYzERMA8GA1UEAxMIcmNhLW9yZzEwWTATBgcqhkjOPQIB
+          BggqhkjOPQMBBwNCAAQ6Nf+aJ/SOkUl+t4n22b5hZNIU50PJrTtSjZwUWy88UIdr
+          HJI9GVULDGf18Nl69GcnN9Mgw2ooAOvQb7SexzHbo1YwVDAOBgNVHQ8BAf8EBAMC
+          AQYwEgYDVR0TAQH/BAgwBgEB/wIBATAdBgNVHQ4EFgQU5Lz3vXlyWqN3221Aei85
+          aGjaqQowDwYDVR0RBAgwBocEAAAAADAKBggqhkjOPQQDAgNHADBEAiBKSvP/oSLY
+          ih2FK/p6rZwC1p7XtNuD8sdg4TNji7GzMgIgVHg73XUEjNZSGzHsTGvy97OkZT6a
+          KKK0XUWAV2UdRU4=
+          -----END CERTIFICATE-----
+          
+    httpOptions:
+      verify: false
+  rca-org2:
+    url: https://0.0.0.0:7055
+    caName: rca-org2
+    tlsCACerts:
+      pem: 
+        - |
+          -----BEGIN CERTIFICATE-----
+          MIICGDCCAb6gAwIBAgIUSnVn5R+jlPu8JP8Nide7jrw/L4EwCgYIKoZIzj0EAwIw
+          YDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK
+          EwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMREwDwYDVQQDEwhyY2Etb3Jn
+          MjAeFw0yMTAyMDgxMTM2MDBaFw0zNjAyMDUxMTM2MDBaMGAxCzAJBgNVBAYTAlVT
+          MRcwFQYDVQQIEw5Ob3J0aCBDYXJvbGluYTEUMBIGA1UEChMLSHlwZXJsZWRnZXIx
+          DzANBgNVBAsTBkZhYnJpYzERMA8GA1UEAxMIcmNhLW9yZzIwWTATBgcqhkjOPQIB
+          BggqhkjOPQMBBwNCAAQ8eqDC8oQEfnSRgKv7jprD8HpQ6M9zq1zFutezYXzuiKBN
+          7pu6ca+IStY6NBGackRLX8B/oyZpyYFU9Usq4oHWo1YwVDAOBgNVHQ8BAf8EBAMC
+          AQYwEgYDVR0TAQH/BAgwBgEB/wIBATAdBgNVHQ4EFgQUpJqztBAA8Nd1EnhNlwbD
+          O0qI6RwwDwYDVR0RBAgwBocEAAAAADAKBggqhkjOPQQDAgNIADBFAiEAnzm/AKGU
+          S3W6h+zg6CBT7Ind3qP5nCYdej1Ho2y0nb8CIFn3HulvnN9dK9AjhkYF2K+sOqp1
+          gCmvhu4aBvSqHvlh
+          -----END CERTIFICATE-----
+          
+    httpOptions:
+      verify: false
+# EntityMatchers enable substitution of network hostnames with static configurations
+ # so that properties can be mapped. Regex can be used for this purpose
+# UrlSubstitutionExp can be empty which means the same network hostname will be used
+# UrlSubstitutionExp can be given same as mapped peer url, so that mapped peer url can be used
+# UrlSubstitutionExp can have golang regex matchers like ${1}.example.${2}:${3} for pattern
+ # like peer0.org1.example.com:1234 which converts peer0.org1.example.com to peer0.org1.example.com:1234
+# sslTargetOverrideUrlSubstitutionExp follow in the same lines as
+ # SubstitutionExp for the fields gprcOptions.ssl-target-name-override respectively
+# In any case mappedHost's config will be used, so mapped host cannot be empty, if entityMatchers are used
+entityMatchers:
+  peer:
+    - pattern: peer1-org1
+      urlSubstitutionExp: localhost:7051
+      sslTargetOverrideUrlSubstitutionExp: peer1-org1
+      mappedHost: peer1-org1
+
+    - pattern: peer2-org1
+      urlSubstitutionExp: localhost:8051
+      sslTargetOverrideUrlSubstitutionExp: peer2-org1
+      mappedHost: peer2-org1
+
+    - pattern: peer1-org2
+      urlSubstitutionExp: localhost:9051
+      sslTargetOverrideUrlSubstitutionExp: peer1-org2
+      mappedHost: peer1-org2
+
+    - pattern: peer2-org2
+      urlSubstitutionExp: localhost:10051
+      sslTargetOverrideUrlSubstitutionExp: peer2-org2
+      mappedHost: peer2-org2
+
+  orderer:
+
+    - pattern: orderer1-org0
+      urlSubstitutionExp: localhost:7050
+      sslTargetOverrideUrlSubstitutionExp: orderer1-org0
+      mappedHost: orderer1-org0
+
+  certificateAuthority:
+    - pattern: rca-org1
+      #urlSubstitutionExp: https://localhost:7054
+      urlSubstitutionExp: localhost:7054
+      sslTargetOverrideUrlSubstitutionExp: rca-org1
+      mappedHost: rca-org1
+
+    - pattern: rca-org2
+      #urlSubstitutionExp: https://localhost:7055
+      urlSubstitutionExp: localhost:7055
+      sslTargetOverrideUrlSubstitutionExp: rca-org2
+      mappedHost: rca-org2
