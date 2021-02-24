@@ -1,0 +1,299 @@
+base on fabric v2.3.0
+ubuntu os
+
+steps:
+
+下载hyperledger-fabric-linux-amd64-2.3.0.tar.gz（https://github.com/hyperledger/fabric/releases）和hyperledger-fabric-ca-linux-amd64-1.4.9.tar.gz（https://github.com/hyperledger/fabric-ca/releases）
+下载docker镜像：https://hub.docker.com/r/hyperledger
+创建configtx.yaml 和docker-compose.yaml文件
+github下载fabric-samples代码
+
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/channel
+cd /root/fabric-ca-operate-guide/v2.3.0/channel
+
+tls证书机构部署和各组织机构tls证书生成：
+docker-compose up ca-tls &
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/admin
+fabric-ca-client enroll -d -u https://tls-ca-admin:tls-ca-adminpw@0.0.0.0:7052
+fabric-ca-client register -d --id.name peer1-org1 --id.secret peer1PW --id.type peer -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name peer2-org1 --id.secret peer2PW --id.type peer -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name peer1-org2 --id.secret peer1PW --id.type peer -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name peer2-org2 --id.secret peer2PW --id.type peer -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name orderer1-org0 --id.secret ordererPW --id.type orderer -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name caadmin-org1 --id.secret caadminorg1PW --id.type admin -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name caadmin-org2 --id.secret caadminorg2PW --id.type admin -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name caadmin-org0 --id.secret caadminorg0PW --id.type admin -u https://0.0.0.0:7052
+fabric-ca-client register -d --id.name osn-admin-client-org0 --id.secret osnadminclientorg0PW --id.type admin -u https://0.0.0.0:7052
+
+export FABRIC_CA_CLIENT_MSPDIR=tls-msp
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1
+fabric-ca-client enroll -d -u https://peer1-org1:peer1PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer1-org1
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2
+fabric-ca-client enroll -d -u https://peer2-org1:peer2PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer2-org1
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1
+fabric-ca-client enroll -d -u https://peer1-org2:peer1PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer1-org2
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2
+fabric-ca-client enroll -d -u https://peer2-org2:peer2PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts peer2-org2
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer
+fabric-ca-client enroll -d -u https://orderer1-org0:ordererPW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts orderer1-org0
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/caadmin
+fabric-ca-client enroll -d -u https://caadmin-org1:caadminorg1PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts ca-admin-org1
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/caadmin/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/caadmin/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/caadmin
+fabric-ca-client enroll -d -u https://caadmin-org2:caadminorg2PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts ca-admin-org2
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/caadmin/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/caadmin/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/caadmin
+fabric-ca-client enroll -d -u https://caadmin-org0:caadminorg0PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts ca-admin-org0
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/caadmin/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/caadmin/tls-msp/keystore/key.pem
+
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/osnadminclient
+fabric-ca-client enroll -d -u https://osn-admin-client-org0:osnadminclientorg0PW@0.0.0.0:7052 --enrollment.profile tls --csr.hosts 0.0.0.0
+mv /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/osnadminclient/tls-msp/keystore/* /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/osnadminclient/tls-msp/keystore/key.pem
+
+
+各组织msp证书机构部署及msp身份生成：
+docker-compose up rca-org0 &
+docker-compose up rca-org1 &
+docker-compose up rca-org2 &
+
+export FABRIC_CA_CLIENT_MSPDIR=msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/admin
+fabric-ca-client enroll -d -u https://rca-org0-admin:rca-org0-adminpw@0.0.0.0:7053
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/config-7053.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/admin/msp/config.yaml
+fabric-ca-client register -d --id.name orderer1-org0 --id.secret ordererpw --id.type orderer --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7053
+fabric-ca-client register -d --id.name admin-org0 --id.secret org0adminpw --id.type admin --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7053
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/users/Admin@org0
+fabric-ca-client enroll -d -u https://admin-org0:org0adminpw@0.0.0.0:7053
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/users/Admin@org0/msp/
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer
+fabric-ca-client enroll -d -u https://orderer1-org0:ordererpw@0.0.0.0:7053
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/msp/tlscacerts/tls-ca-cert.pem
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/cacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/cacerts/0-0-0-0-7053.pem
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/tlscacerts/tls-ca-cert.pem
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/users/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/users/Admin@org0/msp/signcerts/cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/msp/users/Admin-org0.pem
+
+export FABRIC_CA_CLIENT_MSPDIR=msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin
+fabric-ca-client enroll -d -u https://rca-org1-admin:rca-org1-adminpw@0.0.0.0:7054
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/config-7054.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin/msp/config.yaml
+fabric-ca-client register -d --id.name peer1-org1 --id.secret peer1PW --id.type peer --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7054
+fabric-ca-client register -d --id.name peer2-org1 --id.secret peer2PW --id.type peer --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7054
+fabric-ca-client register -d --id.name admin-org1 --id.secret org1AdminPW --id.type admin --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7054
+fabric-ca-client register -d --id.name user-org1 --id.secret org1UserPW --id.type client --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7054
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/users/Admin@org1
+fabric-ca-client enroll -d -u https://admin-org1:org1AdminPW@0.0.0.0:7054
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/users/Admin@org1/msp/
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/users/user@org1
+fabric-ca-client enroll -d -u https://user-org1:org1UserPW@0.0.0.0:7054
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/users/user@org1/msp/
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1
+fabric-ca-client enroll -d -u https://peer1-org1:peer1PW@0.0.0.0:7054
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/msp/tlscacerts/tls-ca-cert.crt
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2
+fabric-ca-client enroll -d -u https://peer2-org1:peer2PW@0.0.0.0:7054
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer2/msp/tlscacerts/tls-ca-cert.crt
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/tlscacerts/tls-ca-cert.crt
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/cacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/cacerts/0-0-0-0-7054.pem
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/users/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/users/Admin@org1/msp/signcerts/cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/msp/users/Admin-org1.pem
+
+export FABRIC_CA_CLIENT_MSPDIR=msp
+export FABRIC_CA_CLIENT_TLS_CERTFILES=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/crypto/ca-cert.pem
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin
+fabric-ca-client enroll -d -u https://rca-org2-admin:rca-org2-adminpw@0.0.0.0:7055
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/config-7055.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin/msp/config.yaml
+fabric-ca-client register -d --id.name peer1-org2 --id.secret peer1PW --id.type peer --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7055
+fabric-ca-client register -d --id.name peer2-org2 --id.secret peer2PW --id.type peer --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7055
+fabric-ca-client register -d --id.name admin-org2 --id.secret org2AdminPW --id.type admin --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7055
+fabric-ca-client register -d --id.name user-org2 --id.secret org2UserPW --id.type client --id.attrs "abac.init=true:ecert" -u https://0.0.0.0:7055
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/users/Admin@org2
+fabric-ca-client enroll -d -u https://admin-org2:org2AdminPW@0.0.0.0:7055
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/users/Admin@org2/msp/
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/users/user@org2
+fabric-ca-client enroll -d -u https://user-org2:org2UserPW@0.0.0.0:7055
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/users/user@org2/msp/
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1
+fabric-ca-client enroll -d -u https://peer1-org2:peer1PW@0.0.0.0:7055
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/msp/tlscacerts/tls-ca-cert.crt
+export FABRIC_CA_CLIENT_HOME=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2
+fabric-ca-client enroll -d -u https://peer2-org2:peer2PW@0.0.0.0:7055
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer2/msp/tlscacerts/tls-ca-cert.crt
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/cacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/cacerts/0-0-0-0-7055.pem
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/tlscacerts/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/tls-ca/crypto/ca-cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/tlscacerts/tls-ca-cert.crt
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/ca/admin/msp/config.yaml /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/users/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/users/Admin@org2/msp/signcerts/cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/msp/users/Admin-org2.pem
+
+
+创建orderer admin client tls certificate：
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/admin-client
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/osnadminclient/tls-msp/keystore/key.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/admin-client/client-tls-key.pem
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/osnadminclient/tls-msp/signcerts/cert.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/admin-client/client-tls-cert.pem
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/osnadminclient/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/admin-client/client-tls-ca-cert.pem
+
+
+启动各组织机构
+docker-compose up orderer1-org0 &
+docker-compose up peer1-org1 &
+docker-compose up peer2-org1 &
+docker-compose up peer1-org2 &
+docker-compose up peer2-org2 &
+docker-compose up cli-org1 &
+docker-compose up cli-org2 &
+
+
+生成 channel 初始区块:
+vi configtx-practice.yaml 
+cp -rf /work/hyperledger-fabric-linux-amd64-2.3.0 ./
+export FABRIC_CFG_PATH=/root/fabric-ca-operate-guide/v2.3.0/channel
+./hyperledger-fabric-linux-amd64-2.3.0/bin/configtxgen -profile SampleAppChannelEtcdRaft -outputBlock /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/genesis_block.pb -channelID mychannel
+
+add orderer to channel:
+vi /etc/hosts
+添加 0.0.0.0 orderer1-org0
+export OSN_TLS_CA_ROOT_CERT=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem
+export ADMIN_TLS_SIGN_CERT=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/admin-client/client-tls-cert.pem
+export ADMIN_TLS_PRIVATE_KEY=/root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/admin-client/client-tls-key.pem
+./hyperledger-fabric-linux-amd64-2.3.0/bin/osnadmin channel join --channel-id mychannel  --config-block /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/genesis_block.pb -o orderer1-org0:7080 --ca-file $OSN_TLS_CA_ROOT_CERT --client-cert $ADMIN_TLS_SIGN_CERT --client-key $ADMIN_TLS_PRIVATE_KEY
+./hyperledger-fabric-linux-amd64-2.3.0/bin/osnadmin channel list --channel-id mychannel -o orderer1-org0:7080 --ca-file $OSN_TLS_CA_ROOT_CERT --client-cert $ADMIN_TLS_SIGN_CERT --client-key $ADMIN_TLS_PRIVATE_KEY
+
+
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/assets
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org0/orderer/genesis_block.pb /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/assets/genesis_block.pb
+mkdir -p /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/assets/
+cp /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/assets/genesis_block.pb /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org2/peer1/assets/genesis_block.pb
+
+
+监控所有容器日志：
+docker kill logspout 2> /dev/null 1>&2 || true
+docker rm logspout 2> /dev/null 1>&2 || true
+docker run -d --name="logspout" --volume=/var/run/docker.sock:/var/run/docker.sock --publish=127.0.0.1:8000:80 --network channel_fabric-ca gliderlabs/logspout
+sleep 3
+curl http://127.0.0.1:8000/logs
+
+
+org1的组织机构加入通道：
+docker exec -it cli-org1 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/users/Admin@org1/msp
+export CORE_PEER_ADDRESS=peer1-org1:7051
+peer channel join -b /tmp/hyperledger/org1/peer1/assets/genesis_block.pb
+export CORE_PEER_ADDRESS=peer2-org1:8051
+peer channel join -b /tmp/hyperledger/org1/peer1/assets/genesis_block.pb
+
+
+org2的组织机构加入通道：
+docker exec -it cli-org2 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org2/users/Admin@org2/msp
+export CORE_PEER_ADDRESS=peer1-org2:9051
+peer channel join -b /tmp/hyperledger/org2/peer1/assets/genesis_block.pb
+export CORE_PEER_ADDRESS=peer2-org2:10051
+peer channel join -b /tmp/hyperledger/org2/peer1/assets/genesis_block.pb
+
+安装链码：
+abac:
+打包链码，Linux宿主机中执行：
+git clone https://github.com/hyperledger/fabric-samples.git
+cd fabric-samples/
+git checkout v2.1.1
+cp -rf ./chaincode/abac /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/assets/chaincode/
+cd /root/fabric-ca-operate-guide/v2.3.0/practice/hyperledger/org1/peer1/assets/chaincode/abac/go/
+GO111MODULE=on go mod vendor
+cd ../
+export FABRIC_CFG_PATH=/root/fabric-ca-operate-guide/v2.3.0/channel/hyperledger-fabric-linux-amd64-2.3.0/config
+peer version
+peer lifecycle chaincode package abac.tar.gz --path ./go/ --lang golang --label abac_1.0
+
+在peer1-org1节点上以组织管理员身份安装链码：
+docker exec -it cli-org1 sh
+cd /opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode/abac/
+export CORE_PEER_ADDRESS=peer1-org1:7051
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/users/Admin@org1/msp
+peer lifecycle chaincode install abac.tar.gz
+
+在peer1-org2节点上以组织管理员身份安装链码：
+docker exec -it cli-org2 sh
+cd /opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode/abac/
+export CORE_PEER_ADDRESS=peer1-org2:9051
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org2/users/Admin@org2/msp
+peer lifecycle chaincode install abac.tar.gz
+
+在peer1-org1节点上以组织管理员身份同意链码定义：
+docker exec -it cli-org1 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/users/Admin@org1/msp
+export CORE_PEER_ADDRESS=peer1-org1:7051
+peer lifecycle chaincode queryinstalled
+export CC_PACKAGE_ID=abac_1.0:34b3ce739e2e9fd63f0e34aca0b9e3f86d6d3dffb903c18e99db1f0b392e175a
+peer lifecycle chaincode approveformyorg -o orderer1-org0:7050 --tls --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --channelID mychannel --name abac --version 1.0 --init-required --package-id $CC_PACKAGE_ID --sequence 1
+peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name abac --version 1.0 --init-required --sequence 1 --tls --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --output json
+
+在peer1-org2节点上以组织管理员身份同意链码定义：
+docker exec -it cli-org2 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org2/users/Admin@org2/msp
+export CORE_PEER_ADDRESS=peer1-org2:9051
+peer lifecycle chaincode queryinstalled
+export CC_PACKAGE_ID=abac_1.0:34b3ce739e2e9fd63f0e34aca0b9e3f86d6d3dffb903c18e99db1f0b392e175a
+peer lifecycle chaincode approveformyorg -o orderer1-org0:7050 --tls --cafile /tmp/hyperledger/org2/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --channelID mychannel --name abac --version 1.0 --init-required --package-id $CC_PACKAGE_ID --sequence 1
+peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name abac --version 1.0 --init-required --sequence 1 --tls --cafile /tmp/hyperledger/org2/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --output json
+
+在peer1-org1节点上以组织管理员身份提交链码定义，并调用链码初始化接口，调用查询接口：
+docker exec -it cli-org1 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/users/Admin@org1/msp
+export CORE_PEER_ADDRESS=peer1-org1:7051
+peer lifecycle chaincode commit -o orderer1-org0:7050 --channelID mychannel --name abac --version 1.0 --init-required --sequence 1 --tls --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --peerAddresses peer1-org1:7051 --tlsRootCertFiles /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --peerAddresses peer1-org2:9051 --tlsRootCertFiles /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem
+peer lifecycle chaincode querycommitted --channelID mychannel --name abac --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem
+peer chaincode invoke -o orderer1-org0:7050 --tls --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem -C mychannel -n abac --peerAddresses peer1-org1:7051 --tlsRootCertFiles /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --peerAddresses peer1-org2:9051 --tlsRootCertFiles /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem -c '{"Args":["init","a","100","b","200"]}' --isInit
+peer chaincode query -C mychannel -n abac -c '{"Args":["query","a"]}'
+
+在peer2-org1节点上以组织管理员身份安装链码，并依次调用查询、调用、查询接口：
+docker exec -it cli-org1 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/users/Admin@org1/msp
+export CORE_PEER_ADDRESS=peer2-org1:8051
+peer lifecycle chaincode install abac.tar.gz
+peer chaincode query -C mychannel -n abac -c '{"Args":["query","a"]}'
+peer chaincode invoke -o orderer1-org0:7050 --tls --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem -C mychannel -n abac -c '{"Args":["invoke","a","b","10"]}' --tls --cafile /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --peerAddresses peer1-org1:7051 --tlsRootCertFiles /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem --peerAddresses peer1-org2:9051 --tlsRootCertFiles /tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-0-0-0-0-7052.pem
+peer chaincode query -C mychannel -n abac -c '{"Args":["query","b"]}'
+
+在peer1-org2节点上以组织管理员身份调用查询接口验证账本数据是否已同步更新，在peer2-org2节点上以组织管理员身份安装链码，并调用查询接口：
+docker exec -it cli-org2 sh
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org2/users/Admin@org2/msp
+export CORE_PEER_ADDRESS=peer1-org2:9051
+peer chaincode query -C mychannel -n abac -c '{"Args":["query","a"]}'
+export CORE_PEER_ADDRESS=peer2-org2:10051
+peer lifecycle chaincode install abac.tar.gz
+peer chaincode query -C mychannel -n abac -c '{"Args":["query","a"]}'
+
+
